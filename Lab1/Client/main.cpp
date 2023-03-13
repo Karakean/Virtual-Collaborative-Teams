@@ -2,8 +2,8 @@
 	Virtual Collaborative Teams - The base program 
     The main module
 	****************************************************/
-#define CLIENT_RECEIVE_PORT 11111
-#define CLIENT_SEND_PORT 11112
+#define CLIENT_RECEIVE_PORT 11114
+#define CLIENT_SEND_PORT 11113
 #include <windows.h>
 #include <math.h>
 #include <time.h>
@@ -30,9 +30,9 @@ float cycle_time;                                         // average time betwee
                                                    // hardware or processes number differences between computers 
 long time_of_cycle, number_of_cyc;                 // variables supported cycle_time calculation
 
-// multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
+//multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
 unicast_net *uni_reciv;
-// multicast_net *multi_send;                         // ...  to send messages ...
+//multicast_net *multi_send;                         // ...  to send messages ...
 unicast_net *uni_send;
 char* SERVER_IP = "127.0.0.1";
 unsigned long server_ip = inet_addr(SERVER_IP);
@@ -67,7 +67,8 @@ DWORD WINAPI ReceiveThreadFun(void *ptr)
 	while (1)
 	{
 		// int frame_size = pmt_net->reciv((char*)&frame, sizeof(Frame));   // waiting for frame 
-		int frame_size = uni_net->reciv((char*)&frame, (unsigned long *)server_ip, sizeof(Frame));
+		unsigned long* server_sender_ip = new unsigned long();
+		int frame_size = uni_net->reciv((char*)&frame, server_sender_ip, sizeof(Frame));
 		ObjectState state = frame.state;
 
 		fprintf(f, "received state of object with iID = %d\n", frame.iID);
@@ -101,8 +102,8 @@ void InteractionInitialisation()
 	time_of_cycle = clock();             // current time
 
 	// net multicast communication objects with virtual collaborative teams IP and port number
-	//multi_reciv = new multicast_net("224.12.12.110", 10001);      // object for receiving messages
-	//multi_send = new multicast_net("224.12.12.110", 10001);       // object for sending messages
+	//multi_reciv = new multicast_net("127.0.0.1", CLIENT_RECEIVE_PORT);      // object for receiving messages
+	//multi_send = new multicast_net("127.0.0.1", CLIENT_SEND_PORT);       // object for sending messages
 	uni_reciv = new unicast_net(CLIENT_RECEIVE_PORT);
 	uni_send = new unicast_net(CLIENT_SEND_PORT);
 
@@ -135,7 +136,7 @@ void VirtualWorldCycle()
 		float fFps = (50 * CLOCKS_PER_SEC) / (float)(time_of_cycle - prev_time);
 		if (fFps != 0) cycle_time = 1.0 / fFps; else cycle_time = 1;
 
-		sprintf(text, "Wzr-lab lato 2021/22 temat 1, wer. a (%0.0f fps  %0.2fms) ", fFps, 1000.0 / fFps);
+		sprintf(text, "CLIENT (%0.0f fps  %0.2fms) ", fFps, 1000.0 / fFps);
 		SetWindowText(main_window, text); 			
 	}
 

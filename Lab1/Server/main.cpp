@@ -2,9 +2,9 @@
 	Virtual Collaborative Teams - The base program 
     The main module
 	****************************************************/
-#define CLIENTS_NUM 1
-#define SERVER_RECEIVE_PORT 11112
-#define SERVER_SEND_PORT 11111
+#define MAX_CLIENTS_NUM 10
+#define SERVER_RECEIVE_PORT 11113
+#define SERVER_SEND_PORT 11114
 #include <windows.h>
 #include <math.h>
 #include <time.h>
@@ -13,6 +13,7 @@
 #include <iterator> 
 #include <map>
 #include <winsock.h>
+#include <set>
 #include "objects.h"
 #include "graphics.h"
 #include "net.h"
@@ -31,11 +32,12 @@ float cycle_time;                                         // average time betwee
                                                    // hardware or processes number differences between computers 
 long time_of_cycle, number_of_cyc;                 // variables supported cycle_time calculation
 
-// multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
+//multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
 unicast_net *uni_reciv;
-// multicast_net *multi_send;                         // ...  to send messages ...
+//multicast_net *multi_send;                         // ...  to send messages ...
 unicast_net *uni_send;
-unsigned long clients_ip[] = { inet_addr("127.0.0.1"), inet_addr("127.0.0.1") };
+std::set<unsigned long> clients;
+//unsigned long clients_ip[] = { inet_addr("172.16.34.19"), inet_addr("127.0.0.1") };
 //char* SERVER_IP = "192.168.0.109";
 //unsigned long server_ip = inet_addr(SERVER_IP);
 
@@ -55,6 +57,7 @@ struct Frame                                       // The main structure of net 
 	int iID;                                       // object identifier 
 	ObjectState state;                             // object state values (see object module)
 };
+map<int, Frame> frames;
 
 
 //******************************************************
@@ -67,28 +70,32 @@ DWORD WINAPI ReceiveThreadFun(void *ptr)
 
 	while (1)
 	{
-		for (unsigned long client : clients_ip) {
-			// int frame_size = pmt_net->reciv((char*)&frame, sizeof(Frame));   // waiting for frame 
-			int frame_size = uni_net->reciv((char*)&frame, (unsigned long*)client, sizeof(Frame));
-			ObjectState state = frame.state;
-
-			fprintf(f, "received state of object with iID = %d\n", frame.iID);
-
-			if (frame.iID != my_vehicle->iID)                     // if the frame isn't my own frame
-			{
-				if (movable_objects[frame.iID] == NULL)           // object hasn't registered up till now 
-											// == nullptr (C++ 11) it is not available in older versions than VC 2013
-				{
-					MovableObject* ob = new MovableObject();
-					ob->iID = frame.iID;
-					movable_objects[frame.iID] = ob;              // registration of new object 
-
-					//fprintf(f, "alien object ID = %d was registred\n", ob->iID);
-				}
-				movable_objects[frame.iID]->ChangeState(state);   // updating the state of the object
-
-			}
+		unsigned long* sender_ip = new unsigned long();
+		int frame_size = uni_net->reciv((char*)&frame, sender_ip, sizeof(Frame));
+		if (clients.find(*sender_ip) == clients.end()) {
+			clients.insert(*sender_ip);
 		}
+		//for (unsigned long client : clients) {
+			//int frame_size = pmt_net->reciv((char*)&frame, sizeof(Frame));   // waiting for frame
+		ObjectState state = frame.state;
+
+		fprintf(f, "received state of object with iID = %d\n", frame.iID);
+
+		if (frame.iID != my_vehicle->iID)                     // if the frame isn't my own frame
+		{
+			if (movable_objects[frame.iID] == NULL)           // object hasn't registered up till now 
+										// == nullptr (C++ 11) it is not available in older versions than VC 2013
+			{
+				MovableObject* ob = new MovableObject();
+				ob->iID = frame.iID;
+				movable_objects[frame.iID] = ob;              // registration of new object 
+
+				//fprintf(f, "alien object ID = %d was registred\n", ob->iID);
+			}
+			movable_objects[frame.iID]->ChangeState(state);   // updating the state of the object
+			frames[frame.iID] = frame;
+		}
+		//}
 	}  // while(1)
 	return 1;
 }
@@ -104,8 +111,8 @@ void InteractionInitialisation()
 	time_of_cycle = clock();             // current time
 
 	// net multicast communication objects with virtual collaborative teams IP and port number
-	//multi_reciv = new multicast_net("224.12.12.110", 10001);      // object for receiving messages
-	//multi_send = new multicast_net("224.12.12.110", 10001);       // object for sending messages
+	//multi_reciv = new multicast_net("127.0.0.1", SERVER_RECEIVE_PORT);      // object for receiving messages
+	//multi_send = new multicast_net("127.0.0.1", SERVER_SEND_PORT);       // object for sending messages
 	uni_reciv = new unicast_net(SERVER_RECEIVE_PORT);
 	uni_send = new unicast_net(SERVER_SEND_PORT);
 
@@ -138,19 +145,31 @@ void VirtualWorldCycle()
 		float fFps = (50 * CLOCKS_PER_SEC) / (float)(time_of_cycle - prev_time);
 		if (fFps != 0) cycle_time = 1.0 / fFps; else cycle_time = 1;
 
-		sprintf(text, "Wzr-lab lato 2021/22 temat 1, wer. a (%0.0f fps  %0.2fms) ", fFps, 1000.0 / fFps);
+		sprintf(text, "SERVER (%0.0f fps  %0.2fms) ", fFps, 1000.0 / fFps);
 		SetWindowText(main_window, text); 			
 	}
 
 	my_vehicle->Simulation(cycle_time);                      // simulation of own object based of previous state, forces and 
 	                                                  // other actions and cycle_time - average time elapsed since the last simulation
-	Frame frame;
-	frame.state = my_vehicle->State();                // state of my own object
-	frame.iID = my_vehicle->iID;                      // my object identifier
-
+	
+	
 	//multi_send->send((char*)&frame, sizeof(Frame));   // sending a message to other application
-	for(unsigned long client : clients_ip)
+	for (unsigned long client : clients) {
+		Frame frame;
+		frame.state = my_vehicle->State();                // state of my own object
+		frame.iID = my_vehicle->iID;                      // my object identifier
+		fprintf(f, "TUTAJ: %d", frame.iID);
 		uni_send->send((char*)&frame, client, sizeof(Frame));
+
+		for (const std::pair<int, MovableObject*>& element : movable_objects) {
+			Frame frame2;
+			frame2.state = element.second->state;
+			frame2.iID = element.second->iID;
+			fprintf(f, "ESSA: %d", frame2.iID);
+			uni_send->send((char*)&frame2, client, sizeof(Frame));
+		}
+	}
+	
 }
 
 // *****************************************************************

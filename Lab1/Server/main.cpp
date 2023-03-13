@@ -2,7 +2,6 @@
 	Virtual Collaborative Teams - The base program 
     The main module
 	****************************************************/
-#define MAX_CLIENTS_NUM 10
 #define SERVER_RECEIVE_PORT 11113
 #define SERVER_SEND_PORT 11114
 #include <windows.h>
@@ -32,14 +31,9 @@ float cycle_time;                                         // average time betwee
                                                    // hardware or processes number differences between computers 
 long time_of_cycle, number_of_cyc;                 // variables supported cycle_time calculation
 
-//multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
-unicast_net *uni_reciv;
-//multicast_net *multi_send;                         // ...  to send messages ...
+unicast_net *uni_receive;
 unicast_net *uni_send;
 std::set<unsigned long> clients;
-//unsigned long clients_ip[] = { inet_addr("172.16.34.19"), inet_addr("127.0.0.1") };
-//char* SERVER_IP = "192.168.0.109";
-//unsigned long server_ip = inet_addr(SERVER_IP);
 
 HWND main_window;                                  // a handle to main window of application
 HANDLE threadReciv;                                // a handle of thread for reciving messages and actions execution depend on message type 
@@ -57,14 +51,12 @@ struct Frame                                       // The main structure of net 
 	int iID;                                       // object identifier 
 	ObjectState state;                             // object state values (see object module)
 };
-map<int, Frame> frames;
 
 
 //******************************************************
 // The function of handling the message receiving thread
 DWORD WINAPI ReceiveThreadFun(void *ptr)
 {
-	//multicast_net *pmt_net = (multicast_net*)ptr;  // the pointer to the object of multicast_net class (see net module)
 	unicast_net* uni_net = (unicast_net*)ptr;
 	Frame frame; 
 
@@ -75,8 +67,6 @@ DWORD WINAPI ReceiveThreadFun(void *ptr)
 		if (clients.find(*sender_ip) == clients.end()) {
 			clients.insert(*sender_ip);
 		}
-		//for (unsigned long client : clients) {
-			//int frame_size = pmt_net->reciv((char*)&frame, sizeof(Frame));   // waiting for frame
 		ObjectState state = frame.state;
 
 		fprintf(f, "received state of object with iID = %d\n", frame.iID);
@@ -93,7 +83,6 @@ DWORD WINAPI ReceiveThreadFun(void *ptr)
 				//fprintf(f, "alien object ID = %d was registred\n", ob->iID);
 			}
 			movable_objects[frame.iID]->ChangeState(state);   // updating the state of the object
-			frames[frame.iID] = frame;
 		}
 		//}
 	}  // while(1)
@@ -110,10 +99,7 @@ void InteractionInitialisation()
 
 	time_of_cycle = clock();             // current time
 
-	// net multicast communication objects with virtual collaborative teams IP and port number
-	//multi_reciv = new multicast_net("127.0.0.1", SERVER_RECEIVE_PORT);      // object for receiving messages
-	//multi_send = new multicast_net("127.0.0.1", SERVER_SEND_PORT);       // object for sending messages
-	uni_reciv = new unicast_net(SERVER_RECEIVE_PORT);
+	uni_receive = new unicast_net(SERVER_RECEIVE_PORT);
 	uni_send = new unicast_net(SERVER_SEND_PORT);
 
 
@@ -122,8 +108,7 @@ void InteractionInitialisation()
 		NULL,                            // no security attributes
 		0,                               // use default stack size
 		ReceiveThreadFun,                // thread function
-		//(void *)multi_reciv,             // argument to thread function
-		(void *)uni_reciv,
+		(void *)uni_receive,
 		NULL,                            // use default creation flags
 		&dwThreadId);                    // returns the thread identifier
 
@@ -151,21 +136,15 @@ void VirtualWorldCycle()
 
 	my_vehicle->Simulation(cycle_time);                      // simulation of own object based of previous state, forces and 
 	                                                  // other actions and cycle_time - average time elapsed since the last simulation
-	
-	
-	//multi_send->send((char*)&frame, sizeof(Frame));   // sending a message to other application
 	for (unsigned long client : clients) {
 		Frame frame;
 		frame.state = my_vehicle->State();                // state of my own object
 		frame.iID = my_vehicle->iID;                      // my object identifier
-		fprintf(f, "TUTAJ: %d", frame.iID);
 		uni_send->send((char*)&frame, client, sizeof(Frame));
-
 		for (const std::pair<int, MovableObject*>& element : movable_objects) {
 			Frame frame2;
 			frame2.state = element.second->state;
 			frame2.iID = element.second->iID;
-			fprintf(f, "ESSA: %d", frame2.iID);
 			uni_send->send((char*)&frame2, client, sizeof(Frame));
 		}
 	}

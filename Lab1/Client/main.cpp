@@ -30,11 +30,9 @@ float cycle_time;                                         // average time betwee
                                                    // hardware or processes number differences between computers 
 long time_of_cycle, number_of_cyc;                 // variables supported cycle_time calculation
 
-//multicast_net *multi_reciv;						   // object (see net module) to recive messages from other applications
-unicast_net *uni_reciv;
-//multicast_net *multi_send;                         // ...  to send messages ...
+unicast_net *uni_receive;
 unicast_net *uni_send;
-char* SERVER_IP = "127.0.0.1";
+char* SERVER_IP = "127.0.0.1"; // !!! CHANGE THIS TO THE REAL SERVER IP
 unsigned long server_ip = inet_addr(SERVER_IP);
 
 
@@ -60,13 +58,11 @@ struct Frame                                       // The main structure of net 
 // The function of handling the message receiving thread
 DWORD WINAPI ReceiveThreadFun(void *ptr)
 {
-	//multicast_net *pmt_net = (multicast_net*)ptr;  // the pointer to the object of multicast_net class (see net module)
 	unicast_net* uni_net = (unicast_net*)ptr;
 	Frame frame;
 
 	while (1)
 	{
-		// int frame_size = pmt_net->reciv((char*)&frame, sizeof(Frame));   // waiting for frame 
 		unsigned long* server_sender_ip = new unsigned long();
 		int frame_size = uni_net->reciv((char*)&frame, server_sender_ip, sizeof(Frame));
 		ObjectState state = frame.state;
@@ -101,10 +97,7 @@ void InteractionInitialisation()
 
 	time_of_cycle = clock();             // current time
 
-	// net multicast communication objects with virtual collaborative teams IP and port number
-	//multi_reciv = new multicast_net("127.0.0.1", CLIENT_RECEIVE_PORT);      // object for receiving messages
-	//multi_send = new multicast_net("127.0.0.1", CLIENT_SEND_PORT);       // object for sending messages
-	uni_reciv = new unicast_net(CLIENT_RECEIVE_PORT);
+	uni_receive = new unicast_net(CLIENT_RECEIVE_PORT);
 	uni_send = new unicast_net(CLIENT_SEND_PORT);
 
 
@@ -113,8 +106,7 @@ void InteractionInitialisation()
 		NULL,                            // no security attributes
 		0,                               // use default stack size
 		ReceiveThreadFun,                // thread function
-		//(void *)multi_reciv,             // argument to thread function
-		(void *)uni_reciv,
+		(void *)uni_receive,
 		NULL,                            // use default creation flags
 		&dwThreadId);                    // returns the thread identifier
 
@@ -146,7 +138,6 @@ void VirtualWorldCycle()
 	frame.state = my_vehicle->State();                // state of my own object
 	frame.iID = my_vehicle->iID;                      // my object identifier
 
-	//multi_send->send((char*)&frame, sizeof(Frame));   // sending a message to other application
 	uni_send->send((char*)&frame, server_ip, sizeof(Frame));
 }
 

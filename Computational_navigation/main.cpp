@@ -226,10 +226,13 @@ void VirtualWorldCycle()
 
 		if (veh)
 		{
-			//veh->state.vPos = ...
-			//veh->state.vV = ....
-			//veh->state.qOrient = ....
-			//veh->state.vV_ang = ....
+			veh->state.vPos = veh->state.vPos + veh->state.vV * avg_cycle_time + veh->state.vA * avg_cycle_time * avg_cycle_time / 2;
+			Vector3 v = veh->state.vV_ang * avg_cycle_time;
+			quaternion qObrot = AsixToQuat(v.znorm(), v.length());
+			veh->state.qOrient = qObrot * veh->state.qOrient;
+
+
+			//veh->state.vPos = veh->state.vPos + veh->state.vV * avg_cycle_time + (veh->state.vA + );
 		}
 
 	}

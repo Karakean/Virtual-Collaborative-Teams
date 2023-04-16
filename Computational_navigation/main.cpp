@@ -3,7 +3,7 @@
     The main module
 ****************************************************/
 
-bool if_prediction_test = false;
+bool if_prediction_test = true;
 bool if_delays = false;
 bool if_shadow = true;
 // Scenariusz testu predykcji - tzw. benchmark - dziêki temu mo¿na porównaæ ró¿ne algorytmy predykcji na tym samym scenariuszu:
@@ -230,9 +230,11 @@ void VirtualWorldCycle()
 			Vector3 v = veh->state.vV_ang * avg_cycle_time;
 			quaternion qObrot = AsixToQuat(v.znorm(), v.length());
 			veh->state.qOrient = qObrot * veh->state.qOrient;
-
-
-			//veh->state.vPos = veh->state.vPos + veh->state.vV * avg_cycle_time + (veh->state.vA + );
+			//projecting acceleration vector onto the longitudinal axis plane according to: rzut = k.znorm()*(k.znorm()^w) 
+			veh->state.vA = veh->state.vPos.znorm() * (veh->state.vPos.znorm()^veh->state.vA);
+			//predicting velocity/angular velocity based on acceleration/angular acceleration results in worse performance
+			//veh->state.vV += veh->state.vA * avg_cycle_time;
+			//veh->state.vV_ang += veh->state.vA_ang * avg_cycle_time;
 		}
 
 	}

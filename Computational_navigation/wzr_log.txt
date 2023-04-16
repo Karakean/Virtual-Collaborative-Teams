@@ -8,3 +8,83 @@ my_vehicle->iID = 674
 poczatek interakcji
 my_vehicle->iID = 41
 Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 32
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 446
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 800
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 882
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 65
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 269
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 557
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 785
+poczatek interakcji
+my_vehicle->iID = 41
+Po czasie 35.00[s]  œr.czêstoœæ = 1.00[r/s]  œr.odl = 2.900[m]  œr.ró¿n.k¹t. = 0.806[st]
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 944
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 972
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 246
+poczatek interakcji
+my_vehicle->iID = 41
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 468
+poczatek interakcji
+my_vehicle->iID = 41
+Po czasie 35.00[s]  œr.czêstoœæ = 1.00[r/s]  œr.odl = 1.040[m]  œr.ró¿n.k¹t. = 1.180[st]
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 713
+poczatek interakcji
+my_vehicle->iID = 41
+Po czasie 35.01[s]  œr.czêstoœæ = 1.00[r/s]  œr.odl = 7.803[m]  œr.ró¿n.k¹t. = 1.496[st]
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 948
+poczatek interakcji
+my_vehicle->iID = 41
+Po czasie 35.00[s]  œr.czêstoœæ = 1.00[r/s]  œr.odl = 0.830[m]  œr.ró¿n.k¹t. = 0.957[st]
+Koniec interakcji
+height_map terrain: number_of_rows = 38, number_of_columns = 43
+my_vehicle->iID = 810
+poczatek interakcji
+my_vehicle->iID = 41
+Po czasie 35.00[s]  œr.czêstoœæ = 1.00[r/s]  œr.odl = 0.871[m]  œr.ró¿n.k¹t. = 1.061[st]
+Koniec interakcji
